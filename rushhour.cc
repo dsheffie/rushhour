@@ -3,7 +3,6 @@
 #include <cstdio>
 #include <string>
 #include <sstream>
-#include <vector>
 #include <set>
 
 static piece* grid[6][6];
@@ -13,9 +12,13 @@ std::string grid_to_string() {
   for(int i = 0; i < 6; i++) {
     for(int j = 0; j < 6; j++) {
       if(grid[i][j]==nullptr)
-	ss << "-,";      
-      else
+	ss << "--,";      
+      else {
+	if(grid[i][j]->id < 10) {
+	  ss << 0;
+	}
 	ss << grid[i][j]->id << ",";
+      }
     }
   }
   return ss.str();
@@ -35,7 +38,6 @@ void print_grid() {
 
 static std::set<std::string> seen;
 piece *red_car = nullptr;
-static std::vector<piece*> pieces;
 
 void moveRight(piece *p) {
   grid[p->y][p->x] = nullptr;  
@@ -69,6 +71,8 @@ void moveDown(piece *p) {
   p->y -= 1;
 }
 
+
+
 uint64_t explored = 0;
 
 bool search() {
@@ -86,7 +90,7 @@ bool search() {
   //print_grid();
   ++explored;
   
-  for(piece *p : pieces) {
+  for(piece *p = red_car; p != nullptr; p=p->next) {
     //printf("piece %d\n", p->id);
     if(p->canMoveLeft(grid)) {
       moveLeft(p);
@@ -121,40 +125,42 @@ bool search() {
 }
 
 
+piece* place(piece *p, piece *last) {
+  for(int i = 0; i < p->sz; i++) {
+    if(p->horiz) {
+      grid[p->y][p->x+i] = p;
+    }
+    else {
+      grid[p->y+i][p->x] = p;
+    }
+  }
+  if(last) {
+    last->next = p;
+  }
+  return p;
+}
+
 int main() {
+  piece *last;
   for(int i = 0; i < 6; i++) {
     for(int j = 0; j < 6; j++) {
       grid[i][j] = nullptr;
     }
   }
   /* red car */
-  grid[2][0] = new piece(true, 2, 0, 2, 0);
-  grid[2][1] = grid[2][0];
-  pieces.push_back(grid[2][0]);
-  red_car = grid[2][0];
+  last = red_car = place(new piece(true, 2, 0, 2, 0), nullptr);
   
   /* yellow bus */
-  grid[0][2] = new piece(false, 3, 2, 0, 1);
-  grid[1][2] = grid[0][2];
-  grid[2][2] = grid[0][2];
-  pieces.push_back(grid[0][2]);
+  last = place(new piece(false, 3, 2, 0, 1), last);
   
   /* green car */
-  grid[0][4] = new piece(true, 2, 4, 0, 2);
-  grid[0][5] = grid[0][4];
-  pieces.push_back(grid[0][4]);
+  last = place(new piece(true, 2, 4, 0, 2), last);
   
   /* purple bus */
-  grid[3][0] = new piece(true, 3, 0, 3, 3);
-  grid[3][1] = grid[3][0];
-  grid[3][2] = grid[3][0];  
-  pieces.push_back(grid[3][0]);
+  last = place(new piece(true, 3, 0, 3, 3), last);
   
   /* blue bus */
-  grid[3][5] = new piece(false, 3, 5, 3, 5);
-  grid[4][5] = grid[3][5];
-  grid[5][5] = grid[3][5];
-  pieces.push_back(grid[3][5]);
+  last = place(new piece(false, 3, 5, 3, 5), last);
   
   print_grid();
   bool x = search();
@@ -163,8 +169,16 @@ int main() {
     print_grid();
     printf("explored %lu states\n", explored);
   }
-  for(piece *p : pieces) {
+
+  last = red_car;
+  while(true) {
+    if(last == nullptr) {
+      break;
+    }
+    piece *p = last;
+    last = last->next;
     delete p;
   }
+
   return 0;
 }

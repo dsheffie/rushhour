@@ -5,8 +5,9 @@
 struct piece {
   bool horiz;
   int sz,x,y,id;
+  piece *next;
   piece(bool horiz, int sz, int x, int y, int id) :
-    horiz(horiz), sz(sz), x(x), y(y), id(id) {}
+    horiz(horiz), sz(sz), x(x), y(y), id(id), next(nullptr) {}
   bool canMoveLeft(piece* grid[6][6]) const {
     int nx = (x - 1);
     if(not(horiz)) {
