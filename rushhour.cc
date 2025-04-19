@@ -1,5 +1,6 @@
 #include "rushhour.hh"
 #include <cstdint>
+#include <cassert>
 #include <iostream>
 #include <cstdio>
 #include <string>
@@ -75,7 +76,7 @@ void moveDown(piece *p) {
 
 
 uint64_t explored = 0;
-
+//#define VERBOSE 1
 bool search() {
 
   if((red_car->x + red_car->sz-1) == 5) {
@@ -96,6 +97,11 @@ bool search() {
     if(p->canMoveLeft(grid)) {
       moveLeft(p);
       if(search()) {
+#ifdef VERBOSE
+	moveRight(p);      
+	printf("move %d left\n", p->id);
+	print_grid();
+#endif
 	return true;
       }
       moveRight(p);      
@@ -103,6 +109,11 @@ bool search() {
     if(p->canMoveRight(grid)) {
       moveRight(p);
       if(search()) {
+#ifdef VERBOSE
+	moveLeft(p);            	
+	printf("move %d right\n", p->id);
+	print_grid();
+#endif
 	return true;
       }
       moveLeft(p);            
@@ -110,6 +121,11 @@ bool search() {
     if(p->canMoveUp(grid)) {
       moveUp(p);
       if(search()) {
+#ifdef VERBOSE
+	moveDown(p);            
+	printf("move %d up\n", p->id);
+	print_grid();
+#endif
 	return true;
       }
       moveDown(p);            
@@ -117,6 +133,11 @@ bool search() {
     if(p->canMoveDown(grid)) {
       moveDown(p);
       if(search()) {
+#ifdef VERBOSE
+	moveUp(p);                  		
+	printf("move %d down\n", p->id);
+	print_grid();
+#endif
 	return true;
       }
       moveUp(p);                  
@@ -129,9 +150,11 @@ bool search() {
 piece* place(piece *p, piece *last) {
   for(int i = 0; i < p->sz; i++) {
     if(p->horiz) {
+      assert(grid[p->y][p->x+i] == nullptr);
       grid[p->y][p->x+i] = p;
     }
     else {
+      assert(grid[p->y+i][p->x] == nullptr);
       grid[p->y+i][p->x] = p;
     }
   }
@@ -146,26 +169,46 @@ int piece::idcnt = 0;
 int main() {
   piece *last;
   /* red car */
-  last =  place(new car(true, 0, 2), nullptr);
+  last =  place(new car(true, 1, 2), nullptr);
   red_car = last;
+
+  /* purple car */
+  last = place(new car(true, 0, 3), last);
+
+  /* dark green car */
+  last = place(new car(false, 0, 4), last);
+
+  /* light green car */
+  last = place(new car(false, 1, 0), last);
   
   /* yellow bus */
-  last = place(new bus(false, 2, 0), last);
-  
-  /* green car */
-  last = place(new car(true, 4, 0), last);
-  
-  /* purple bus */
-  last = place(new bus(true, 0, 3), last);
-  
+  last = place(new bus(true, 2, 0), last);
+
   /* blue bus */
-  last = place(new bus(false, 5, 3), last);
-  
+  last = place(new bus(false, 2, 3), last);
+
+  /* light blue car */
+  last = place(new car(false, 3, 2), last);
+
+  /* pink car */
+  last = place(new car(false, 4, 2), last);
+
+  /* sliver car */
+  last = place(new car(true, 3, 4), last);
+
+  /* green bus */
+  last = place(new bus(true, 3, 5), last);
+    
+  /* purple bus */
+  last = place(new bus(false, 5, 2), last);
+
+  /* orange car */
+  last = place(new car(false, 5, 0), last);
+    
   print_grid();
   bool x = search();
   printf("search %s\n", x ? "was successful" : "failed");
   if(x) {
-    print_grid();
     std::cout << "explored " << explored << " states\n";
   }
 
