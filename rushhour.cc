@@ -1,11 +1,12 @@
 #include "rushhour.hh"
 #include <cstdint>
+#include <iostream>
 #include <cstdio>
 #include <string>
 #include <sstream>
 #include <set>
 
-static piece* grid[6][6];
+static piece* grid[6][6] = {{nullptr}};
 
 std::string grid_to_string() {
   std::stringstream ss;
@@ -140,34 +141,32 @@ piece* place(piece *p, piece *last) {
   return p;
 }
 
+int piece::idcnt = 0;
+
 int main() {
   piece *last;
-  for(int i = 0; i < 6; i++) {
-    for(int j = 0; j < 6; j++) {
-      grid[i][j] = nullptr;
-    }
-  }
   /* red car */
-  last = red_car = place(new piece(true, 2, 0, 2, 0), nullptr);
+  last =  place(new car(true, 0, 2), nullptr);
+  red_car = last;
   
   /* yellow bus */
-  last = place(new piece(false, 3, 2, 0, 1), last);
+  last = place(new bus(false, 2, 0), last);
   
   /* green car */
-  last = place(new piece(true, 2, 4, 0, 2), last);
+  last = place(new car(true, 4, 0), last);
   
   /* purple bus */
-  last = place(new piece(true, 3, 0, 3, 3), last);
+  last = place(new bus(true, 0, 3), last);
   
   /* blue bus */
-  last = place(new piece(false, 3, 5, 3, 5), last);
+  last = place(new bus(false, 5, 3), last);
   
   print_grid();
   bool x = search();
   printf("search %s\n", x ? "was successful" : "failed");
   if(x) {
     print_grid();
-    printf("explored %lu states\n", explored);
+    std::cout << "explored " << explored << " states\n";
   }
 
   last = red_car;

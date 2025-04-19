@@ -3,11 +3,12 @@
 #include <cstdio>
 
 struct piece {
+  static int idcnt;
   bool horiz;
   int sz,x,y,id;
   piece *next;
-  piece(bool horiz, int sz, int x, int y, int id) :
-    horiz(horiz), sz(sz), x(x), y(y), id(id), next(nullptr) {}
+  piece(bool horiz, int sz, int x, int y) :
+    horiz(horiz), sz(sz), x(x), y(y), id(idcnt++), next(nullptr) {}
   bool canMoveLeft(piece* grid[6][6]) const {
     int nx = (x - 1);
     if(not(horiz)) {
@@ -47,6 +48,14 @@ struct piece {
     return (grid[ny][x] == nullptr);
   }  
   
+};
+
+struct bus : public piece {
+  bus(bool horiz, int x, int y) : piece(horiz, 3, x, y) {}
+};
+
+struct car : public piece {
+  car(bool horiz, int x, int y) : piece(horiz, 2, x, y) {}
 };
 
 
